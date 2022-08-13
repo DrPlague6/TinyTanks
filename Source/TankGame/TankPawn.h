@@ -6,6 +6,7 @@
 #include "GameFramework/Pawn.h"
 #include "Components/BoxComponent.h"
 #include "Components/SceneComponent.h"
+#include "Engine/Engine.h"
 #include "TankPawn.generated.h"
 
 UCLASS()
@@ -21,7 +22,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -29,13 +30,28 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	void MoveForward(float Value);
 	void MoveRight(float Value);
+
+	// Tank Properties
 	UPROPERTY(EditAnywhere, Category = "Tank")
-		float MovementSpeed = 100.0f;
+	float MovementSpeed = 100.0f;
 	UPROPERTY(EditAnywhere, Category = "Tank")
-		float RotationSpeed = 30.0f;
+	float RotationSpeed = 30.0f;
+	UPROPERTY(EditAnywhere, Category = "Tank", Replicated)
+	float Health = 100.0f;
+	
+	UPROPERTY(BlueprintReadWrite, Category = "Player", meta=(ExposeOnSpawn = true), Replicated)
+	int PlayerID;
+	UPROPERTY(BlueprintReadWrite, Category = "Player", meta=(ExposeOnSpawn = true), Replicated)
+	UMaterial* PlayerMaterial;
+
+	// Server Side Functions
+	UFUNCTION(Server, Reliable)
+	void Server_UpdatePosition(FTransform NewPosition, ATankPawn* TankPawn);
 private:
 	UStaticMeshComponent* TankMeshComponent;
 	float TankForward;
 	USceneComponent* Root;
 	float TankRotation;
+	float* ForwardForce = new float;
+	FRotator* RotationForce = new FRotator;
 };
